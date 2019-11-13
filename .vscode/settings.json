@@ -1,0 +1,22 @@
+{
+	"editor.tabSize": 2,
+	"editor.insertSpaces": false,
+	// "editor.detectIndentation": false,
+	"editor.formatOnType": true,
+	"files.watcherExclude": {
+		"**/.git/**": true,
+		".tmp": true,
+		"**/node_modules/**": true
+	},
+	"files.exclude": {
+		"**/.git": true,
+		".tmp": true,
+		"**/node_modules/**": true
+	},
+	// "typescript.tsc.autoDetect": "off",
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"cSpell.words": [
+		"amexcell",
+		"gamecore"
+	],
+}
