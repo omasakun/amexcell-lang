@@ -1,4 +1,4 @@
-import { reg } from "./parser";
+import { reg } from "./parser_base";
 
 describe("reg", () => {
   it("/^(\d+)/", () => {

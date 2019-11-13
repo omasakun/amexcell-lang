@@ -27,24 +27,34 @@ An programming language for creating programs by combining Excel functions.
 Source:
 ``` clojure
 ; ここはコメントです。
-(def sigma       ; add という名前のモジュールを定義
-  (in num1)      ; num1 という入力を持つモジュールだと定義
+
+; add という名前のモジュールを定義
+(def sigma
+  ; num1 という入力を持つモジュールだと定義
+  (in num1)
   (in num2)
   (in num3)
   (in num4)
-  (out sumValue) ; sumValue という出力を持つモジュールだと定義
+  ; sumValue という出力を持つモジュールだと定義
+  (out sumValue)
   ; sumValue に、 num1 + num2 + num3 を代入
   ; Excel関数と同じく、自動的に再計算される
   (= sumValue (+ num1 num2 num3)))
 
-(def main        ; main という名前のモジュールが、最終的な入出力をする
-  (in nums w:4)  ; 幅4セルの入力、numsを持つと定義
-  (out outs h:2) ; 高さ2セルの出力、outsを持つと定義
-  (new adder sigma) ; sigmaモジュールのインスタンス、sigmaを持つと定義
-  (= adder.num1 (nums x:0)) ; adderのnum1の入力に、numsの中でx座標が0のセルを代入
+; main という名前のモジュールが、最終的な入出力をする
+(def main
+  ; 幅4セルの入力、numsを持つと定義
+  (in nums w:4)
+  ; 高さ2セルの出力、outsを持つと定義
+  (out outs h:2)
+  ; sigmaモジュールのインスタンス、sigmaを持つと定義
+  (new adder sigma)
+  ; adderのnum1の入力に、numsの中でx座標が0のセルを代入
+  (= adder.num1 (nums x:0))
   (= adder.num2 (nums x:1))
   (= adder.num3 (nums x:2))
-  (= adder.num4 `Sheet1!A1`)     ; Excel関数に、そのままの文字列で「A1」と出力される
+  ; Excel関数に、そのままの文字列で「A1」と出力される
+  (= adder.num4 #"Sheet1!A1")
   (= (outs y:0) adder.sumValue)
   (= (outs y:1) (outs y:0)))
 ```
@@ -67,7 +77,8 @@ Source:
 ``` clojure
 (def sigma
   (in nums w:3)
-  (in num)   ; 文法から変数と関数は区別できるため、変数と同じ名前を使ってもいい
+  ; 文法から変数と関数は区別できるため、変数と同じ名前を使ってもいい
+  (in num)
   (out sum)
   (= sum (sum nums num)))
 
@@ -76,7 +87,7 @@ Source:
   (out outs h:2)
   (new adder sigma)
   (= adder.nums nums)
-  (= adder.num `Sheet1!A1`)
+  (= adder.num #"Sheet1!A1")
   (= outs adder.sum))
 ```
 
@@ -85,9 +96,11 @@ Source:
 ``` clojure
 (def main
   (out table w:9 h:9)
-  (var hori w:9)   ; モジュール内でのみ参照できる変数の定義
+  ; モジュール内でのみ参照できる変数の定義
+  (var hori w:9)
   (var vert h:9)
-  (= (hori x:0..4) [1 2 3 4 5]) ; 配列の一部への代入
+  ; 配列の一部への代入
+  (= (hori x:0..4) [1 2 3 4 5])
   (= (hori x:5..8) [6 7 8 9])
   (= (vert y:0..4) (transpose (hori x:0..4)))
   (= (vert y:5..8) (transpose (hori x:5..8)))
