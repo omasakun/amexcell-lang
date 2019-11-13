@@ -1,0 +1,67 @@
+@import common
+#debug_notice
+	position: absolute
+	top: .2em
+	left: 50%
+	transform: translateX(-50%)
+	padding: 0 .5em
+	border-radius: .5em
+	user-select: none
+	pointer-events: none
+	color: cv($blue, 6)
+	background-color: cv($blue, 2)
+	opacity: .7
+	z-index: 10
+	
+// #container - Grid layout
+#container
+	display: grid
+	width: 100%
+	height: 100%
+	grid-template: 1fr/1fr // rows / columns
+#start_view
+	grid-area: 1/1/1/1 // row-start/row-end / column-start/column-end
+	z-index: 2
+#ide_view
+	grid-area: 1/1/1/1 // row-start/row-end / column-start/column-end
+	z-index: 1
+
+// #start_view
+#start_view
+	background-color: $bg
+.card
+	background-color: $bg
+	.link
+		padding: 2px 4px
+	p
+		margin-top: 1em
+		margin-bottom: 1em
+#license
+	pre
+		line-height: 1.2
+		white-space: pre-wrap
+	.subtitle
+		margin-top: 1em
+
+hr.or
+	text-align: center
+	&:after
+		content: "OR"
+		position: relative
+		top: -1.1em
+		font-size: .9em
+		background: $bg
+		padding: 0 0.5em
+		font-weight: bold
+		color: cv($normal-color, 2)
+.-no-border
+	border-color: transparent !important
+.-narrow-line
+	line-height: 1.2
+textarea.-narrow-line
+	padding-top: 1em * 1.8 / 1.2
+.-hover2strong
+	transition: 0.3s all
+	color: transparentize($fg, 0.7)
+	&:hover
+		color: $fg

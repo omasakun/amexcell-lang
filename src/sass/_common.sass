@@ -1,0 +1,457 @@
+/*
+	# Class
+		.alert.-{color}
+		.btn.-{solid, text}.-active.-{color}:disabled
+		.check:disabled
+		.group
+		.group>.text.-{color}
+		.h{1~6}, .subtitle
+		.link
+		.radio:disabled
+		.text_field.-{color}:disabled
+	# Utility
+		.-bouncing
+		.-font-{mono, title, body}
+		.-font-{bold, normal, thin}
+		.-font-spaced
+		.-visible, .-invisible
+		.-hide-text
+		.-d-{inline, block, inline-block, flex, inline-flex, none}
+		.-overflow{"", x, y}-{auto, hidden}
+		.-shadow-{large, middle, small}
+		.-{w, h, mxw, mxh, mnw, mxh}-{auto, 0, 100, 10em, 20em, 30em, 40em, 50em}
+		.-{m, p}{"", t, b, l, r, x, y}-{auto, 0, 05em, n05em, 1em, n1em, 2em, n2em, 3em, n3em}
+		.-text-{left, right, center}
+		.-text-{wrap, nowrap}
+		.-text-break
+		.-flex-{row, rowr, column, columnr}
+		.-justify-content-{start, end, center, between, around}
+		.-align-{items, self, content}-{start, end, center, stretch}
+		.-flex-{nowrap, wrap, wrapr}
+		.-list-nostyle
+
+@import ress
+
+// Constants
+$shadow-large: 0 12px 60px rgba(10,10,10,.3)
+$shadow-middle: 0 6px 30px rgba(10,10,10,.3)
+$shadow-small: 0 3px 15px rgba(10,10,10,.3)
+
+$font-body: "Lato", "Noto Sans JP", Roboto, Helvetica, Arial, sans-serif
+$font-title: "Lato", "kokoro", "Noto Sans JP", Roboto, Helvetica, Arial, sans-serif
+$font-mono: "Inconsolata", monospace
+
+
+$red: #D42A20
+$green: #15893B
+$blue: #2473DF
+$purple: #8E2CC8
+$yellow: #FAAC2B
+$bg: #FAFAFA // #FCF3D9
+$fg: #101010
+$normal-color: mix($bg, $fg, 30)
+$selection: transparentize(#b8b5d0, 0.5)
+
+$color-alias: ("": $normal-color, ".-primary": $purple, ".-danger": $red, ".-warning": $yellow, ".-success": $green, ".-info": $blue)
+@function cv($base: null, $id: 5) // color-variation id: 0 ~ 9 (base省略時、id>5で色が変わらない)
+	$list: -90, -80, -70, -60, -30, 0, 20, 50, 70, 90
+	$value: nth($list, $id + 1)
+	@if $base == null
+		$base: $fg
+	@if $value < 0
+		@return mix($base, $bg, 100 + $value)
+	@else
+		@return mix($base, $fg, 100 - $value)
+@mixin cv
+	@each $name, $color in $color-alias
+		&#{$name}
+			@content($color)
+// Alert
+.alert
+	padding: .75em .5em
+	@include cv using ($color)
+		background-color: cv($color, 0)
+		border-left: .3em solid cv($color, 4)
+		// border-top-left-radius: .3em
+		// border-bottom-left-radius: .3em
+		color: cv($color, 7)
+// Button, Checkbox, Radio
+input[type="radio"], input[type="checkbox"]
+	&.btn, &.check, &.radio
+		display: none
+// Button
+.btn, .btn+label
+	display: inline-block
+	transition: all .15s
+	padding: .3em 1em
+	outline: none !important
+	cursor: pointer
+	border: 1px solid transparent
+	user-select: none
+.btn
+	@include cv using ($color)
+		&.-solid
+			&, &+label
+				background-color: cv($color, 0)
+				border-color: cv($color, 0)
+				color: cv($color, 6)
+		&:not(.-text)
+			&, &+label
+				border-color: cv($color, 3)
+		&:not(.-solid)
+			&, &+label
+				color: cv($color, 5)
+		&:disabled
+			&, &+label
+				background-color: cv($color, 0)
+				border-color: cv($color, 0)
+				color: cv($color, 3)
+		&:disabled, &.-active
+			&, &+label
+				cursor: default
+		&:not(:disabled):not(.-active)
+			&.-solid
+				&, &+label
+					&:hover:not(:active)
+						background-color: transparent
+						border-color: cv($color, 4) transparent
+						color: cv($color, 5)
+			&:not(.-solid)
+				&, &+label
+					&:hover:not(:active)
+						background-color: cv($color, 5)
+						border-color: cv($color, 5)
+						color: cv($color, 0)
+		&.-active:not(:disabled), &:active:not(:disabled), &:checked+label // , &.-active+label, &+label:active
+				background-color: cv($color, 2)
+				border-color: cv($color, 2)
+				color: cv($color, 7)
+// Checkbox, Radio
+.check, .radio
+	&+label
+		cursor: pointer
+		display: inline-block
+		padding: .3em 0
+		position: relative
+		user-select: none // ダブルクリックでテキスト選択にならないように
+		&::before
+			transition: all .15s
+			display: block
+			position: absolute
+			content: ""
+			left: 0
+			border: 1px solid transparent
+	&:disabled+label
+		cursor: default
+	@include cv using ($color)
+		&+label
+			color: cv($color, 5)
+			&::before
+				border-color: cv($color, 4)
+		&:disabled+label
+			color: cv($color, 3)
+			&::before
+				border-color: cv($color, 0)
+				background-color: cv($color, 0)
+// Checkbox
+.check
+	&+label
+		padding-left: 2em
+	&+label::before
+		top: .4em
+		width: 1.4em
+		height: 1.4em
+	&:checked+label::before
+		transform: rotate(45deg)
+		width: .8em
+		border-top: transparent
+		border-left: transparent
+		border-width: 2px
+		top: .2em
+		left: .4em
+// Dropbox
+// Group
+.group
+	display: flex
+	flex-wrap: wrap
+	>*
+		border: 1px solid transparent
+		&:first-child
+			border-top-left-radius: .5em
+			border-bottom-left-radius: .5em
+		&:not(:last-child)
+			margin-right: -1px !important
+		&:last-child
+			border-top-right-radius: .5em
+			border-bottom-right-radius: .5em
+	>.text
+		display: flex
+		align-items: center
+		padding: .3em 1em
+		@include cv using ($color)
+			background-color: cv($color, 0)
+			border: 1px solid cv($color, 2)
+// Header
+$header-sizes: ("h2": 1.8em, "h3": 1.5em, "h4": 1.2em, "h5": 1em, "h6": .85em)
+.h2, .h3, .h4, .h5, .h6
+	font-family: $font-title
+	font-weight: 300
+.h1
+	font-weight: 700
+	font-size: 1em
+	letter-spacing: .13em
+	text-transform: uppercase
+.subtitle
+	font-weight: 700
+	font-size: .9em
+	letter-spacing: .05em
+@each $name, $size in $header-sizes
+	.#{$name}
+		font-size: $size
+// Link
+.link
+	transition: all .15s
+	cursor: pointer
+	text-decoration: none
+	background-size: 100% 200%
+	background-position: top -1px left
+	&:hover
+		background-position: top -2px left
+	&:active
+		background-position: bottom 0 left
+	@include cv using ($color)
+		color: cv($color, 5)
+		background-image: linear-gradient(to top, cv($color, 3) 50%, transparent 50%)
+		//&:visited
+		//	color: cv($color, 4)
+		&:hover
+			color: cv($color, 6)
+			background-image: linear-gradient(to top, cv($color, 5) 50%, transparent 50%)
+		&:active
+			color: cv($color, 0)
+// Notification
+// Radio
+.radio
+	&+label
+		padding-left: 1.6em
+	&+label::before
+		top: .65em
+		width: 1em
+		height: 1em
+		border-radius: 0.7em
+	@include cv using ($color)
+		&:checked+label::before
+			background-color: cv($color, 5)
+			border-color: cv($color, 5)
+// Slider
+// Text Field
+.text_field
+	position: relative
+	input, textarea
+		border: 1px solid transparent
+	@include cv using ($color)
+		input
+			border-bottom-color: cv($color, 4)
+		textarea
+			border-color: cv($color, 4)
+		input, textarea
+			background-color: cv($color, 0)
+			&:disabled+label
+				color: cv($color, 3)
+		label
+			background-color: cv($color, 0)
+			color: cv($color, 7)
+	input, textarea
+		display: inline-block
+		outline: none !important
+		padding: 1em 1em 0em 1em
+		&::placeholder
+			color: transparent
+		&:focus, &:not(:placeholder-shown)
+			&+label
+				top: .1em
+				left: (1em / .7)
+				font-size: .7em
+		&:invalid
+			background-color: cv($red, 0)
+			&+label
+				background-color: cv($red, 0)
+				color: cv($red, 7)
+		&:disabled
+			&+label
+				cursor: default
+	input
+		&:invalid
+			border-bottom-color: cv($red, 4)
+		&:disabled
+			border-bottom-width: 2px
+			border-bottom-style: dotted
+	textarea
+		&:invalid
+			border-color: cv($red, 4)
+		&:disabled
+			border-width: 2px
+			border-style: dotted
+	label
+		transition: all .15s
+		display: block
+		position: absolute
+		top: .5em
+		left: 1em
+		cursor: text
+		padding: 0 1em 0 0
+.group .text_field
+	border: 1px solid
+	@include cv using ($color)
+		border-color: cv($color, 2)
+	input, textarea
+		border: none
+	textarea
+		height: 100%
+// Others
+.-bouncing
+	>*
+		display: inline-block
+		animation: hopping-up .48s cubic-bezier(0.68,-0.55, 0.6, 0.9) infinite alternate
+		@for $i from 1 through 15
+			&:nth-child(#{$i})
+				animation-delay: $i * .11s
+	@keyframes hopping-up
+		from
+			transform: translateY(0)
+		50%
+			transform: translateY(0)
+		to
+			transform: translateY(-.3em)
+.-font-mono
+	font-family: $font-mono !important
+.-font-title
+	font-family: $font-title !important
+.-font-body
+	font-family: $font-body !important
+.-font-bold
+	font-weight: 700 !important
+.-font-normal
+	font-weight: 400 !important
+.-font-thin
+	font-weight: 300 !important
+.-font-spaced
+	letter-spacing: .05em
+.-visible
+	visibility: true !important
+.-invisible
+	visibility: false !important
+.-hide-text
+	font: 0/0 none
+	color: transparent
+	background-color: transparent
+	border: none
+$displays: inline, lnline-block, block, flex, inline-flex, none
+@each $name in $displays
+	.-d-#{$name}
+		display: $name !important
+$overflows: auto, hidden
+@each $name in $overflows
+	.-overflow-#{$name}
+		overflow: $name !important
+	.-overflowx-#{$name}
+		overflow-x: $name !important
+	.-overflowy-#{$name}
+		overflow-y: $name !important
+.-shadow-large
+	box-shadow: $shadow-large !important
+.-shadow-middle
+	box-shadow: $shadow-middle !important
+.-shadow-small
+	box-shadow: $shadow-small !important
+$sizes: ("auto": auto, "0": 0%, "100": 100%, "1em": 1em, "2em": 2em, "3em": 3em, "10em": 10em, "20em": 20em, "30em": 30em, "40em": 40em, "50em": 50em)
+$size-names: ("w": "width", "h": "height", "mxw": "max-width", "mxh": "max-height", "mnw": "min-width", "mnh": "min-height")
+@each $name2, $value in $sizes
+	@each $name1, $prop in $size-names
+		.-#{$name1}-#{$name2}
+			#{$prop}: $value !important
+$spacers: ("auto": auto, "0": 0%, "05em": 0.5em, "n05em": -0.5em, "1em": 1em, "n1em": -1em, "2em": 2em, "n2em": -2em, "3em": 3em, "n3em": -3em)
+$spacer-names: ("m": "margin", "p": "padding")
+@each $name2, $value in $spacers
+	@each $name1, $prop in $spacer-names
+		.-#{$name1}t-#{$name2}, .-#{$name1}y-#{$name2}, .-#{$name1}-#{$name2}
+			#{$prop}-top: $value !important
+		.-#{$name1}b-#{$name2}, .-#{$name1}y-#{$name2}, .-#{$name1}-#{$name2}
+			#{$prop}-bottom: $value !important
+		.-#{$name1}l-#{$name2}, .-#{$name1}x-#{$name2}, .-#{$name1}-#{$name2}
+			#{$prop}-left: $value !important
+		.-#{$name1}r-#{$name2}, .-#{$name1}x-#{$name2}, .-#{$name1}-#{$name2}
+			#{$prop}-right: $value !important
+$aligns: left, right, center
+@each $name in $aligns
+	.-text-#{$name}
+		text-align: $name !important
+.-text-wrap
+	white-space: normal !important
+.-text-nowrap
+	white-space: nowrap !important
+.-text-prewrap
+	white-space: pre-wrap !important
+.-text-pre
+	white-space: pre !important
+.-text-break
+	overflow-wrap: break-word !important
+.-flex-row
+	flex-direction: row
+.-flex-rowr
+	flex-direction: row-reverse
+.-flex-column
+	flex-direction: column
+.-flex-columnr
+	flex-direction: column-reverse
+$justify-contents: start, end, center, between, around
+@each $name in $justify-contents
+	.-justify-content-#{$name}
+		justify-content: $name
+$align-flex: start, end, center, stretch
+@each $name in $align-flex
+	.-align-items-#{$name}
+		align-items: $name
+	.-align-self-#{$name}
+		align-self: $name
+	.-align-content-#{$name}
+		align-content: $name
+.-flex-fill
+	flex-shrink: 1
+	flex-grow: 1
+@for $i from 0 through 1
+	.-flex-shrink-#{$i}
+		flex-shrink: $i
+	.-flex-grow-#{$i}
+		flex-grow: $i
+.-flex-nowrap
+	flex-wrap: nowrap
+.-flex-wrap
+	flex-wrap: wrap
+.-flex-wrapr
+	flex-wrap: wrap-reverse
+.-list-nostyle
+	list-style: none
+// Global
+*
+	-webkit-tap-highlight-color: transparent
+	&::selection
+		background-color: $selection
+html, body
+	width: 100%
+	height: 100%
+body
+	font-family: $font-body
+	background-color: $bg
+	color: $fg
+	line-height: 1.8
+	// font-size: 0.95em
+	font-feature-settings: "palt"
+b, strong
+	font-weight: 700
+code, kbd, pre, samp
+	font-family: $font-mono
+hr
+	border: none
+	@include cv using ($color)
+		border-top: 1px solid cv($color, 2)

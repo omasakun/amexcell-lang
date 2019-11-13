@@ -1,0 +1,52 @@
+doctype html
+html(lang="ja")
+	head
+		meta(charset="utf-8")
+		meta(name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes")
+		meta(http-equiv="X-UA-Compatible" content="IE=edge")
+		meta(name="description" content="An programming language for creating programs by combining Excel functions.")
+		meta(name="author" content="omasakun")
+		title Amexcell
+		link(rel="stylesheet" href="./index.css")
+		link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,400,700|Noto+Sans+JP:300,400,700|Inconsolata:400&display=swap&subset=japanese")
+		link(rel="stylesheet" href="https://fonts.googleapis.com/earlyaccess/kokoro.css")
+		script(defer src="./index.js")
+		//- include _favicon.pug
+	body
+		if is_debug
+			#debug_notice #[b (( DEBUG BUILD )) ]
+		#container.-overflow-hidden
+			#start_view.-overflow-auto
+				.-mxw-50em.-mx-auto.-mt-2em
+					h1.h1.-ml-1em Amexcell
+					.card.-shadow-large.-p-1em.-mb-3em
+						div
+							h2.h2 Excel関数の限界への挑戦
+							p Amexcellは、Excel関数を組み合わせてプログラムを組むためのプログラム言語です。
+							.-text-center.-my-2em
+								button.btn.-mnw-10em.-primary.-font-spaced#begin_using 使ってみる
+							include:markdown-it start-message.md
+							h2.h4 開発状況・開発予定
+							ul.-mt-05em.-list-nostyle
+								include _dev-progress.pug
+							hr.-my-1em
+							// a.link.-mr-1em(href="/roadmap.html") Roadmap
+							a.link.-mr-1em(href="https://github.com/omasakun/amexcell-lang" target="_blank") GitHub (main repo)
+							a.link.-mr-1em(href="https://gitlab.com/omasakun/amexcell-lang" target="_blank") GitLab
+							a.link#show_license_notice License
+						.-d-none#license
+							include _license-notice.pug
+			#ide_view
+				.-mxw-30em.-mx-auto.-mt-2em
+					h1.h1.-ml-1em Compiler
+					.card.-shadow-large.-px-1em.-py-2em.-mb-3em
+							div.-text-center
+								button.btn#upload_code Upload
+							hr.or.-my-1em
+							.text_field
+								textarea(placeholder="Source Code" rows=10).-font-mono.-w-100.-narrow-line#code_input
+								label Source Code
+							.-text-right
+								button.btn.-no-border#begin_compilation Compile
+				.-w-100
+					pre.-narrow-line.-px-3em.-pb-1em.-hover2strong#log_output
