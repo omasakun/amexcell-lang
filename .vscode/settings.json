@@ -17,6 +17,15 @@
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"cSpell.words": [
 		"amexcell",
-		"gamecore"
+		"cells",
+		"fuga",
+		"gamecore",
+		"hoge",
+		"hori",
+		"moge",
+		"nonneg",
+		"piyo",
+		"typeof",
+		"virt"
 	],
 }
