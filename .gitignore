@@ -18,6 +18,7 @@ node_modules/
 /public/
 /functions/lib/
 coverage/
+docs/
 
 # Symbolic link
 /tsconfig.json
