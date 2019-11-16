@@ -186,5 +186,5 @@ function generateCell(index: number, range: { w: number, h: number }, formula: s
 	const w = range.w, h = range.h;
 	const rangeRef = `RC:R${w === 1 ? "" : "[" + (w - 1) + "]"}C${h === 1 ? "" : "[" + (h - 1) + "]"}`;
 	const styleID: string = kind === "in" ? "s1" : kind === "out" ? "s2" : kind === "used" ? "s3" : neverHere(kind);
-	return `<Cell ss:Index="${index.toString()}" ss:ArrayRange="${rangeRef}" ss:Formula="${escapeXml(formula)}" ss:StyleID=${styleID}><Comment><ss:Data xmlns="http://www.w3.org/TR/REC-html40">${escapeXml(label)}</ss:Data></Comment></Cell>`;
+	return `<Cell ss:Index="${index.toString()}" ss:ArrayRange="${rangeRef}" ss:Formula="${escapeXml(formula)}" ss:StyleID="${styleID}"><Comment><ss:Data xmlns="http://www.w3.org/TR/REC-html40">${escapeXml(label)}</ss:Data></Comment></Cell>`;
 }
