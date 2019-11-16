@@ -49,6 +49,22 @@ onLoad(() => {
 	initIdeView(e);
 	if (isDebugMode()) {
 		e.start.begin.click();
+		e.ide.code.value = [
+			"(def sigma",
+			"	(in nums w:3)",
+			"	; 文法から変数と関数は区別できるため、変数と同じ名前を使ってもいい",
+			"	(in num)",
+			"	(out sum)",
+			"	(= sum (sum nums num)))",
+			"",
+			"(def main",
+			"	(in nums w:3)",
+			"	(out outs h:2)",
+			"	(new adder sigma)",
+			"	(= adder.nums nums)",
+			"	(= adder.num #\"Sheet1!A1\")",
+			"	(= outs adder.sum))"
+		].join("\n");
 	}
 });
 
@@ -101,22 +117,27 @@ function initIdeView(e: Elms) {
 
 function compiler(text: string, logger: Logger) {
 	logger.clear();
+	logger.append("##### Log ########");
+	logger.append(new Date().toISOString());
 	logger.append("===== Input  =====");
 	logger.append(text);
 	logger.append("===== EOF    =====\n");
 	const result = compile(text, logger);
 	logger.lineBreak();
+	logger.append("==================");
 	if (result.result) {
 		logger.append("Compilation succeeded!");
 		logger.append("===== Result =====");
 		logger.append(result.result);
 		logger.append("===== EOF    =====");
+		if (isDebugMode()) return;
 		let fileName = prompt("Save as...", "workbook.xml");
 		if (fileName !== null) {
 			downloadText(fileName, result.result, "application/xml");
 		}
 	} else {
 		logger.append("Compilation failed...");
+		alert("Compilation failed...");
 	}
 }
 

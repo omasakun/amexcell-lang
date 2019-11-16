@@ -25,35 +25,48 @@ An programming language for creating programs by combining Excel functions.
 ### Example1 総和
 
 Source:
-```
-// ここはコメントです。
-/* ここもコメントです。
-	 ここもコメントです。*/
-def sigma                       // add という名前のモジュールを定義する。
-	in  num1 num2                 // num1, num2 という名前の入力を持つモジュールだと定義
-	in  num3                      // in は2つ以上書くこともできる
-	out sumValue                  // sumValue という名前の出力をするモジュールだと定義
-	sumValue = (+ num1 num2 num3) // Excel関数のように、右辺の値が書き換わったら左辺の値が書き換わる
-                            	  // 上の行はExcel関数を使って `sumValue = sum(num1, num2, num3)` とも書ける
-def main                        // main という名前を持ったモジュールが、プログラム全体の最終的な入出力をする
-	in  nums[w:3]                 // 幅3の入力をnumsという名前で定義
-	out outs[h:2]                 // 高さ2の出力をsumという名前で定義
-	new adder :: sigma            // adder という名前で、sigmaモジュールのインスタンスを作成
-	adder.num1 = nums[x:0]        // adderのnum1の入力に、numsのx座標が0番目のセルの値を入れる
-	adder.num2 = nums[x:1]        // Excel関数のように、右辺の値が書き換わると左辺の値も書き換わる
-	adder.num3 = nums[x:2]
-	outs[y:0] = adder.sumValue
-	outs[y:1] = outs[y:0]
+``` clojure
+; ここはコメントです。
+
+; add という名前のモジュールを定義
+(def sigma
+  ; num1 という入力を持つモジュールだと定義
+  (in num1)
+  (in num2)
+  (in num3)
+  (in num4)
+  ; sumValue という出力を持つモジュールだと定義
+  (out sumValue)
+  ; sumValue に、 num1 + num2 + num3 を代入
+  ; Excel関数と同じく、自動的に再計算される
+  (= sumValue (+ num1 num2 num3)))
+
+; main という名前のモジュールが、最終的な入出力をする
+(def main
+  ; 幅4セルの入力、numsを持つと定義
+  (in nums w:4)
+  ; 高さ2セルの出力、outsを持つと定義
+  (out outs h:2)
+  ; sigmaモジュールのインスタンス、sigmaを持つと定義
+  (new adder sigma)
+  ; adderのnum1の入力に、numsの中でx座標が0のセルを代入
+  (= adder.num1 (nums x:0))
+  (= adder.num2 (nums x:1))
+  (= adder.num3 (nums x:2))
+  ; Excel関数に、そのままの文字列で「A1」と出力される
+  (= adder.num4 #"Sheet1!A1")
+  (= (outs y:0) adder.sumValue)
+  (= (outs y:1) (outs y:0)))
 ```
 
-Result:
+コンパイル例:
 ```
-A1: コメント「nums[x:0]」がついた緑色のセル
-B1: コメント「nums[x:1]」がついた緑色のセル
-C1: コメント「nums[x:2]」がついた緑色のセル
-A2: 「=A1+B1+C1」
-A3: コメント「outs[y:0]」がついた「=A2」な青色のセル
-A4: コメント「outs[y:1]」がついた「=A3」な青色のセル
+A1: コメント「nums x:0」がついた緑色のセル
+B1: コメント「nums x:1」がついた緑色のセル
+C1: コメント「nums x:2」がついた緑色のセル
+A2: 「=A1+B1+C1+Sheet1!A1」
+A3: コメント「outs y:0」がついた「=A2」な青色のセル
+A4: コメント「outs y:1」がついた「=A3」な青色のセル
 ```
 
 ### Example2 総和
@@ -61,31 +74,37 @@ A4: コメント「outs[y:1]」がついた「=A3」な青色のセル
 Example1と同じ動作をするプログラム
 
 Source:
-```
-def sigma
-	in nums[w:3]        // タブインデントは必須。スペースでインデントは認めない。
-	out sum
-	sum = (sum nums)
+``` clojure
+(def sigma
+  (in nums w:3)
+  ; 文法から変数と関数は区別できるため、変数と同じ名前を使ってもいい
+  (in num)
+  (out sum)
+  (= sum (sum nums num)))
 
-def main
-	in  nums[w:3]
-	out outs[h:2]
-	new adder :: sigma
-	adder.nums = nums
-	outs {=} adder.sum  // {=} を使って、CSE数式を入れる
+(def main
+  (in nums w:3)
+  (out outs h:2)
+  (new adder sigma)
+  (= adder.nums nums)
+  (= adder.num #"Sheet1!A1")
+  (= outs adder.sum))
 ```
 
 ### Example3 かけ算九九表
 
-```
-def main
-	out table[w:9 h:9]
-	var hori[w:9] vert[h:9]      // 一時変数の定義
-	hori[x:0..4] {=} {1,2,3,4,5} // 配列の一部にのみ代入
-	hori[x:5..8] {=} {6,7,8,9}
-	vert[y:0..4] {=} (transpose hori[0..4])
-	vert[y:5..8] {=} (transpose hori[5..8])
-	table {=} hori * vert
+``` clojure
+(def main
+  (out table w:9 h:9)
+  ; モジュール内でのみ参照できる変数の定義
+  (var hori w:9)
+  (var vert h:9)
+  ; 配列の一部への代入
+  (= (hori x:0..4) [1 2 3 4 5])
+  (= (hori x:5..8) [6 7 8 9])
+  (= (vert y:0..4) (transpose (hori x:0..4)))
+  (= (vert y:5..8) (transpose (hori x:5..8)))
+  (= table (* hori vert)))
 ```
 
 ## Repositories

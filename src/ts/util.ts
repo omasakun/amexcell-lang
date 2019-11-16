@@ -19,6 +19,13 @@ export function onAnim(fn: () => { continue: boolean }) {
 
 /** 静的型チェックでも実行時チェックでもエラーが出てくれるイイヤツ */
 // eslint-disable-next-line no-unused-vars
-export function neverHere(_: never) {
+export function neverHere(_: never): never {
 	throw "BUG!!!";
+}
+
+export function makeArr<T>(len: number, value: (i: number) => T): T[] {
+	const a: T[] = [];
+	for (let i = 0; i < len; i++)
+		a.push(value(i));
+	return a;
 }

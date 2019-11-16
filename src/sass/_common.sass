@@ -66,6 +66,9 @@ $color-alias: ("": $normal-color, ".-primary": $purple, ".-danger": $red, ".-war
 	@each $name, $color in $color-alias
 		&#{$name}
 			@content($color)
+// Reset
+button
+	outline: none !important
 // Alert
 .alert
 	padding: .75em .5em
@@ -84,7 +87,6 @@ input[type="radio"], input[type="checkbox"]
 	display: inline-block
 	transition: all .15s
 	padding: .3em 1em
-	outline: none !important
 	cursor: pointer
 	border: 1px solid transparent
 	user-select: none
