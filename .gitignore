@@ -23,6 +23,6 @@ coverage/
 /tsconfig.json
 
 # Private files
-/private*
+private*
 .env
 /xml-experiments/
