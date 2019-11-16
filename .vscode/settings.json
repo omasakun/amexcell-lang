@@ -17,6 +17,7 @@
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"cSpell.words": [
 		"amexcell",
+		"apos",
 		"cells",
 		"fuga",
 		"gamecore",

@@ -1,4 +1,4 @@
-import { makeArr } from "../util";
+import { makeArr, neverHere } from "../util";
 import { packBin } from "./bin-packing";
 
 // https://support.office.com/en-us/article/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3
@@ -27,16 +27,31 @@ export class CellsView {
 		this.cells.values.push({ area, v });
 	}
 	getRefString(): string {
-		throw "Not implemented."; // TODO: Implement
+		if (!this.cells.position)
+			throw "セルへの参照文字列を取得する前に、セルの配置を行ってください";
+		const x = this.cells.position.x + this.area.x;
+		const y = this.cells.position.y + this.area.y;
+		const w = this.area.w ? this.area.w : this.cells.size.w;
+		const h = this.area.h ? this.area.h : this.cells.size.h;
+		let result = "";
+		result += "R" + (x + 1) + "C" + (y + 1);
+		if (w !== 1 || h !== 1) {
+			result += ":";
+			result += "R" + (x + w) + "C" + (y + h);
+		}
+		return result;
 	}
 }
+export type CellKind = "in" | "out" | "used";
 export class Cells {
 	readonly size: Size2D
 	position: Pos2D | undefined = undefined
 	values: { area: Area, v: string }[] = []
+	kind: CellKind;
 	label: string
-	constructor(size: Size2D, label = "") {
+	constructor(size: Size2D, kind: CellKind, label = "") {
 		this.size = size;
+		this.kind = kind;
 		this.label = label;
 	}
 	getView(area: Area = { x: 0, y: 0 }): CellsView {
@@ -67,10 +82,10 @@ export class Sheet {
 	private cells: Cells[] = [];
 	private isArranged = false;
 	private size: { w: number, h: number } | undefined = undefined;
-	alloc(size: Size2D, label = ""): Cells {
+	alloc(size: Size2D, kind: CellKind, label = ""): Cells {
 		if (this.isArranged)
 			throw "セルの配置処理が完了したあとからセルを追加することは、実装が面倒なので許可してません。";
-		const c = new Cells(size, label);
+		const c = new Cells(size, kind, label);
 		this.cells.push(c);
 		return c;
 	}
@@ -99,6 +114,77 @@ export class Sheet {
 	export(): string {
 		if (!this.isArranged)
 			throw "セルの配置処理を行ってからエクスポートしてください。";
-		return "Exporting worksheet is not implemented...";
+		const list = this.cells.flatMap(c => {
+			return c.values.map(v => {
+				const x = c.position!.x + v.area.x;
+				const y = c.position!.y + v.area.y;
+				const w = v.area.w ? v.area.w : c.size.w;
+				const h = v.area.h ? v.area.h : c.size.h;
+				return { x, y, w, h, v: v.v, label: c.label, kind: c.kind };
+			});
+		}).sort((a, b) => a.y === b.y ? a.x - b.x : a.y - b.y);
+		let rows: string[] = [];
+		let cells: string[] = [], prevY = -1;
+		list.forEach(l => {
+			if (prevY !== l.y) {
+				if (cells.length > 0) {
+					rows.push(generateRow(prevY + 1, cells));
+					cells = [];
+				}
+				prevY = l.y;
+			}
+			cells.push(generateCell(l.x + 1, l, l.v, l.label, l.kind));
+		});
+		if (cells.length > 0) {
+			rows.push(generateRow(prevY + 1, cells));
+			cells = [];
+		}
+		return generateSheet("amexcell-result", rows.join("\n"));
 	}
+}
+
+function escapeXml(str: string) {
+	return str
+		.replace("&", "&amp;")
+		.replace("<", "&lt;")
+		.replace(">", "&gt;")
+		.replace('"', "&quot;")
+		.replace("'", "&apos;");
+}
+function generateSheet(sheetName: string, tableBody: string) {
+	return [
+		`<?xml version="1.0"?>`,
+		`<?mso-application progid="Excel.Sheet"?>`,
+		`<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" `,
+		`	xmlns:o="urn:schemas-microsoft-com:office:office" `,
+		`	xmlns:x="urn:schemas-microsoft-com:office:excel" `,
+		`	xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" `,
+		`	xmlns:html="http://www.w3.org/TR/REC-html40">`,
+		`	<Styles>`,
+		`		<Style ss:ID="s1" ss:Name="Input">`,
+		`			<Interior ss:Color="#C6E0B4" ss:Pattern="Solid"/>`,
+		`		</Style>`,
+		`		<Style ss:ID="s2" ss:Name="Output">`,
+		`			<Interior ss:Color="#BDD7EE" ss:Pattern="Solid"/>`,
+		`		</Style>`,
+		`		<Style ss:ID="s3" ss:Name="Used">`,
+		`			<Interior ss:Color="#DBDBDB" ss:Pattern="Solid"/>`,
+		`		</Style>`,
+		`	</Styles>`,
+		`	<Worksheet ss:Name="${sheetName}">`,
+		`		<Table>`,
+		tableBody.split("\n").map(v => "\t\t\t" + v).join("\n"),
+		`		</Table>`,
+		`	</Worksheet>`,
+		`</Workbook>`,
+	].join("\n");
+}
+function generateRow(index: number, cells: string[]) {
+	return [`<Row ss:Index="${index.toString()}">`, ...cells.map(v => "\t" + v), "</Row>"].join("\n");
+}
+function generateCell(index: number, range: { w: number, h: number }, formula: string, label: string, kind: CellKind) {
+	const w = range.w, h = range.h;
+	const rangeRef = `RC:R${w === 1 ? "" : "[" + (w - 1) + "]"}C${h === 1 ? "" : "[" + (h - 1) + "]"}`;
+	const styleID: string = kind === "in" ? "s1" : kind === "out" ? "s2" : kind === "used" ? "s3" : neverHere(kind);
+	return `<Cell ss:Index="${index.toString()}" ss:ArrayRange="${rangeRef}" ss:Formula="${escapeXml(formula)}" ss:StyleID=${styleID}><Comment><ss:Data xmlns="http://www.w3.org/TR/REC-html40">${escapeXml(label)}</ss:Data></Comment></Cell>`;
 }

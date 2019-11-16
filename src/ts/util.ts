@@ -19,7 +19,7 @@ export function onAnim(fn: () => { continue: boolean }) {
 
 /** 静的型チェックでも実行時チェックでもエラーが出てくれるイイヤツ */
 // eslint-disable-next-line no-unused-vars
-export function neverHere(_: never) {
+export function neverHere(_: never): never {
 	throw "BUG!!!";
 }
 

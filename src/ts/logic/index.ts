@@ -39,13 +39,13 @@ export function compile(text: string, logger: Logger): CompileResult {
 		logger.lineBreak();
 
 
-		// 6. TODO: 仮想セルに数式の文字列を割り当てる
+		// 6. 仮想セルに数式の文字列を割り当てる
 		assignFormulas(instance);
 
-		// 7. TODO: 仮想セルの整合性確認をする
+		// 7. 仮想セルの整合性確認をする
 		sheet.verify();
 
-		// 8. TODO: ワークシートとして出力する
+		// 8. ワークシートとして出力する
 		const result = sheet.export();
 
 		return { result };

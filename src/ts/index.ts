@@ -118,6 +118,7 @@ function initIdeView(e: Elms) {
 function compiler(text: string, logger: Logger) {
 	logger.clear();
 	logger.append("##### Log ########");
+	logger.append(new Date().toISOString());
 	logger.append("===== Input  =====");
 	logger.append(text);
 	logger.append("===== EOF    =====\n");
