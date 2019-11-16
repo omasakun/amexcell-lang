@@ -22,3 +22,10 @@ export function onAnim(fn: () => { continue: boolean }) {
 export function neverHere(_: never) {
 	throw "BUG!!!";
 }
+
+export function makeArr<T>(len: number, value: (i: number) => T): T[] {
+	const a: T[] = [];
+	for (let i = 0; i < len; i++)
+		a.push(value(i));
+	return a;
+}

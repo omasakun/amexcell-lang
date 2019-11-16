@@ -36,17 +36,20 @@ html(lang="ja")
 							a.link#show_license_notice License
 						.-d-none#license
 							include _license-notice.pug
-			#ide_view
+			#ide_view.-overflow-auto
 				.-mxw-30em.-mx-auto.-mt-2em
 					h1.h1.-ml-1em Compiler
 					.card.-shadow-large.-px-1em.-py-2em.-mb-3em
 							div.-text-center
 								button.btn#upload_code Upload
-							hr.or.-my-1em
+							hr.or.-my-2em
 							.text_field
 								textarea(placeholder="Source Code" rows=10).-font-mono.-w-100.-narrow-line#code_input
 								label Source Code
 							.-text-right
 								button.btn.-no-border#begin_compilation Compile
+							hr.or.-my-1em
+							.-text-center
+								button.link Examples
 				.-w-100
-					pre.-narrow-line.-px-3em.-pb-1em.-hover2strong#log_output
+					pre.-narrow-line.-px-3em.-pb-1em.-hover2strong.-text-prewrap#log_output

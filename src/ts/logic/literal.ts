@@ -1,4 +1,5 @@
 import { Parser, map, seq_all as seq, token, choice, repeat as rep, reg, lazy } from './parser_base';
+import { neverHere } from '../util';
 /*
 # Grammar
 行区切りは、空白文字と同様に扱われる。ただし、エラー表示が行番号でなされるという都合上、特別な扱いをする。
@@ -12,15 +13,15 @@ import { Parser, map, seq_all as seq, token, choice, repeat as rep, reg, lazy } 
 - (1 2 3): いつもの。ListLit
 */
 
-type Lit = NumLit | NameLit | PropLit | StrLit | RawLit | ArrLit | ListLit;
+export type Lit = NumLit | NameLit | PropLit | StrLit | RawLit | ArrLit | ListLit;
 
-interface NumLit { t: "num", v: number }
-interface StrLit { t: "str", v: string }
-interface RawLit { t: "raw", v: string }
-interface NameLit { t: "name", v: string }
-interface PropLit { t: "prop", name: string, v: number | { min: number, max: number } }
-interface ArrLit { t: "arr", v: (NumLit | StrLit | ArrLit)[] }
-interface ListLit { t: "list", v: Lit[] }
+export interface NumLit { t: "num", v: number }
+export interface StrLit { t: "str", v: string }
+export interface RawLit { t: "raw", v: string }
+export interface NameLit { t: "name", v: string }
+export interface PropLit { t: "prop", name: string, v: number | { min: number, max: number } }
+export interface ArrLit { t: "arr", v: (NumLit | StrLit | ArrLit)[] }
+export interface ListLit { t: "list", v: Lit[] }
 
 interface Line {
 	ln: number
@@ -32,9 +33,48 @@ function stripComments(text: string): Line[] {
 		.map(l => ({ ln: l.ln, line: l.line.trim() }))
 		.filter(l => !l.line.startsWith(";"));
 }
-export function parser(text: string) {
-	const result = sourceParser(stripComments(text).map(v => v.line).join(" "));
-	return result;
+export function str2lit(text: string): ListLit[] {
+	text = stripComments(text).map(v => v.line).join("\n");
+	const result = sourceParser(text);
+	if (!result) throw `パース失敗。\n残り: ${text}\n成功: なし`;
+	if (result.t) throw `パース失敗。\n残り: ${result.t}\n成功: ${JSON.stringify(result.v)}`;
+	return result.v;
+}
+export function lit2sExpr(l: Lit): string {
+	if (l.t === "arr")
+		return "(arr " + l.v.map(v => lit2sExpr(v)).join(" ") + ")";
+	if (l.t === "list")
+		return "(list " + l.v.map(v => lit2sExpr(v)).join(" ") + ")";
+	if (l.t === "name")
+		return "(name " + l.v + ")";
+	if (l.t === "num")
+		return "(num " + l.v + ")";
+	if (l.t === "prop")
+		return "(prop " + l.name + " " + (typeof l.v === "number" ? l.v : l.v.min + " " + l.v.max) + ")";
+	if (l.t === "raw")
+		return "(raw " + JSON.stringify(l.v) + ")";
+	if (l.t === "str")
+		return "(str " + JSON.stringify(l.v) + ")";
+	neverHere(l);
+	return "[Serialization Error]";
+}
+export function lit2str(l: Lit): string {
+	if (l.t === "arr")
+		return "[" + l.v.map(v => lit2str(v)).join(" ") + "]";
+	if (l.t === "list")
+		return "(" + l.v.map(v => lit2str(v)).join(" ") + ")";
+	if (l.t === "name")
+		return l.v;
+	if (l.t === "num")
+		return "#" + l.v;
+	if (l.t === "prop")
+		return "@" + l.name + "." + (typeof l.v === "number" ? l.v : l.v.min + ".." + l.v.max);
+	if (l.t === "raw")
+		return "#" + JSON.stringify(l.v);
+	if (l.t === "str")
+		return JSON.stringify(l.v);
+	neverHere(l);
+	return "[Serialization Error]";
 }
 
 const head = <T>(a: T[]) => a[0];
