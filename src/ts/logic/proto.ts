@@ -228,12 +228,12 @@ function parseRef(lit: Lit): VarExpr | PortExpr {
 				throw `セルへの参照のプロパティが不正です。\nExpr: ${l2s(p)}\nin ${l2s(lit)}`;
 			}
 		});
+		let ow = isNaN(w) ? (isNaN(x) && isNaN(y) ? {} : { w: 1 }) : { w };
+		let oh = isNaN(h) ? (isNaN(x) && isNaN(y) ? {} : { h: 1 }) : { h };
 		if (isNaN(x)) x = 0;
 		if (isNaN(y)) y = 0;
-		let ow = isNaN(w) ? {} : { w };
-		let oh = isNaN(h) ? {} : { h };
-		if (t.t === "port") return { t: "port", port: { mName: t.module, port: t.port, x: 0, y: 0, ...ow, ...oh } };
-		else if (t.t === "var") return { t: "var", cell: { name: t.name, x: 0, y: 0, ...ow, ...oh } };
+		if (t.t === "port") return { t: "port", port: { mName: t.module, port: t.port, x, y, ...ow, ...oh } };
+		else if (t.t === "var") return { t: "var", cell: { name: t.name, x, y, ...ow, ...oh } };
 		else throw neverHere(t);
 	} else throw `セルへの参照を期待しましたが、不正です。\nExpr: ${l2s(lit)}`;
 }

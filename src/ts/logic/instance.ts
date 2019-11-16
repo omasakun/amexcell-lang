@@ -53,8 +53,9 @@ function resolveRef(module: Module, ref: VarExprProto | PortExprProto, type: "le
 		return p.getView(ref.port);
 	} else if (ref.t === "var") {
 		const v1 = module.var.get(ref.cell.name);
-		const v2 = (type === "left-side" ? module.out : module.in).get(ref.cell.name);
-		const v = v1 || v2;
+		const v2 = module.in.get(ref.cell.name);
+		const v3 = module.out.get(ref.cell.name);
+		const v = v1 || v2 || v3;
 		if (!v) throw `存在しない変数への参照です。Expr: ${proto2str(ref)}`;
 		return v.getView(ref.cell);
 	} else throw neverHere(ref);
@@ -69,9 +70,9 @@ function resolveExpr(module: Module, p: ExprProto): Expr {
 /** 各セルに数式を代入する */
 export function assignFormulas(m: Module) {
 	m.eqs.forEach(e => {
-		e.cView.setFormula(expr2formula(e.expr));
+		e.cView.setFormula("=" + expr2formula(e.expr));
 	});
-	m.modules.forEach(m => "=" + assignFormulas(m));
+	m.modules.forEach(m => assignFormulas(m));
 }
 export function expr2formula(e: Expr): string {
 	if (e.t === "num") return e.v.toString();
