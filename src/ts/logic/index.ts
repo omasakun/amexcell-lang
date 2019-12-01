@@ -41,6 +41,9 @@ export function compile(text: string, logger: Logger): CompileResult {
 
 		// 6. 仮想セルに数式の文字列を割り当てる
 		assignFormulas(instance);
+		logger.append("[Cell allocations]");
+		logger.append(sheet.cells2str());
+		logger.lineBreak();
 
 		// 7. 仮想セルの整合性確認をする
 		sheet.verify();

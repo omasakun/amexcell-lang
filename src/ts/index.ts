@@ -218,7 +218,7 @@ function compiler(text: string, logger: Logger) {
 		logger.append("===== Result =====");
 		logger.append(result.result);
 		logger.append("===== EOF    =====");
-		if (isDebugMode()) return;
+		// if (isDebugMode()) return;
 		let fileName = prompt("Save as...", "workbook.xml");
 		if (fileName !== null) {
 			downloadText(fileName, result.result, "application/xml");
