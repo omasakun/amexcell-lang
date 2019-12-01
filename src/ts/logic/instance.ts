@@ -31,8 +31,8 @@ function makeModule(sheet: Sheet, map: Map<string, ModuleProto>, mName: string, 
 	const proto = map.get(mName);
 	if (!proto) throw `定義されていないモジュールの実体を作ろうとしています。Name: ${mName}。`;
 	const result: Module = { in: new Map(), out: new Map(), var: new Map(), modules: new Map(), eqs: [], moduleName: mName, instanceNamePath: iPath };
-	proto.in.forEach(v => result.in.set(v.name, sheet.alloc(v.size, mName === "main" ? "main-in" : "in", iPath.join(".") + ".in." + v.name)));
-	proto.out.forEach(v => result.out.set(v.name, sheet.alloc(v.size, mName === "main" ? "main-out" : "out", iPath.join(".") + ".out." + v.name)));
+	proto.in.forEach(v => result.in.set(v.name, sheet.alloc(v.size, mName === "main" ? "in*" : "in", iPath.join(".") + ".in." + v.name)));
+	proto.out.forEach(v => result.out.set(v.name, sheet.alloc(v.size, mName === "main" ? "out*" : "out", iPath.join(".") + ".out." + v.name)));
 	proto.var.forEach(v => result.var.set(v.name, sheet.alloc(v.size, "tmp", iPath.join(".") + ".var." + v.name)));
 	proto.modules.forEach((v, k) => result.modules.set(k, makeModule(sheet, map, v, iPath.concat(k))));
 	proto.eqs.forEach(eq => {

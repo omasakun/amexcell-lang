@@ -42,7 +42,7 @@ export class CellsView {
 		return result;
 	}
 }
-export type CellKind = "in" | "out" | "tmp" | "main-in" | "main-out";
+export type CellKind = "in" | "out" | "tmp" | "in*" | "out*";
 export class Cells {
 	readonly size: Size2D
 	position: Pos2D | undefined = undefined
@@ -80,7 +80,7 @@ export class Cells {
 	// デフォルトの toString のほうが情報量が多いため、上書きはしない。
 	toStr(): string {
 		return [
-			this.kind.padEnd(3, " "),
+			this.kind.padEnd(4, " "),
 			(this.size.w + "x" + this.size.h).padEnd(7, " "),
 			(this.position ? (this.position.x + "," + this.position.y) : "nopos").padEnd(7, " "),
 			this.label,
@@ -233,7 +233,7 @@ function kind2styleID(kind: CellKind): string {
 	return kind === "in" ? "s1"
 		: kind === "out" ? "s2"
 			: kind === "tmp" ? "s3"
-				: kind === "main-in" ? "s4"
-					: kind === "main-out" ? "s5"
+				: kind === "in*" ? "s4"
+					: kind === "out*" ? "s5"
 						: neverHere(kind);
 }
