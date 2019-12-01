@@ -149,7 +149,7 @@ function task_ts() {
 					name: "index_js",
 					sourcemap: "inline"
 				})
-			}).then(() => done())
+			}).then(() => done()) // TODO: error handling
 		}))
 		.pipe(prod_only(closure_compiler({
 			compilation_level: "SIMPLE",

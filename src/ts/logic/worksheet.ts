@@ -34,15 +34,15 @@ export class CellsView {
 		const w = this.area.w ? this.area.w : this.cells.size.w;
 		const h = this.area.h ? this.area.h : this.cells.size.h;
 		let result = "";
-		result += "R" + (x + 1) + "C" + (y + 1);
+		result += "R" + (y + 1) + "C" + (x + 1);
 		if (w !== 1 || h !== 1) {
 			result += ":";
-			result += "R" + (x + w) + "C" + (y + h);
+			result += "R" + (y + h) + "C" + (x + w);
 		}
 		return result;
 	}
 }
-export type CellKind = "in" | "out" | "used";
+export type CellKind = "in" | "out" | "tmp" | "in*" | "out*";
 export class Cells {
 	readonly size: Size2D
 	position: Pos2D | undefined = undefined
@@ -76,6 +76,20 @@ export class Cells {
 				}
 			}
 		}
+	}
+	// デフォルトの toString のほうが情報量が多いため、上書きはしない。
+	toStr(): string {
+		return [
+			this.kind.padEnd(4, " "),
+			(this.size.w + "x" + this.size.h).padEnd(7, " "),
+			(this.position ? (this.position.x + "," + this.position.y) : "nopos").padEnd(7, " "),
+			this.label,
+			this.values.map(v =>
+				v.area.x + "," +
+				v.area.y + ":" +
+				(v.area.w ? v.area.w : "*") + "x" +
+				(v.area.h ? v.area.h : "*")).join(" "),
+		].join(" ");
 	}
 }
 export class Sheet {
@@ -111,18 +125,30 @@ export class Sheet {
 	verify() {
 		this.cells.forEach(c => c.verify());
 	}
+	cells2str(): string {
+		return this.cells.map(c => c.toStr()).join("\n");
+	}
 	export(): string {
 		if (!this.isArranged)
 			throw "セルの配置処理を行ってからエクスポートしてください。";
 		const list = this.cells.flatMap(c => {
-			return c.values.map(v => {
+			return c.values.flatMap(v => {
 				const x = c.position!.x + v.area.x;
 				const y = c.position!.y + v.area.y;
 				const w = v.area.w ? v.area.w : c.size.w;
 				const h = v.area.h ? v.area.h : c.size.h;
-				return { x, y, w, h, v: v.v, label: c.label, kind: c.kind };
+				const r: { x: number, y: number, kind: CellKind, additional?: { w: number, h: number, v: string, label: string } }[]
+					= [{ x, y, kind: c.kind, additional: { w, h, v: v.v, label: c.label } }];
+				for (let dx = 0; dx < w; dx++) {
+					for (let dy = 0; dy < h; dy++) {
+						if (dx !== 0 || dy !== 0)
+							r.push({ x: x + dx, y: y + dy, kind: c.kind });
+					}
+				}
+				return r;
 			});
 		}).sort((a, b) => a.y === b.y ? a.x - b.x : a.y - b.y);
+		console.log(list);
 		let rows: string[] = [];
 		let cells: string[] = [], prevY = -1;
 		list.forEach(l => {
@@ -133,7 +159,11 @@ export class Sheet {
 				}
 				prevY = l.y;
 			}
-			cells.push(generateCell(l.x + 1, l, l.v, l.label, l.kind));
+			if (l.additional) {
+				cells.push(generateFormulaCell(l.x + 1, l.additional, l.additional.v, l.additional.label, l.kind));
+			} else {
+				cells.push(generateBlankCell(l.x + 1, l.kind));
+			}
 		});
 		if (cells.length > 0) {
 			rows.push(generateRow(prevY + 1, cells));
@@ -162,13 +192,19 @@ function generateSheet(sheetName: string, tableBody: string) {
 		`	xmlns:html="http://www.w3.org/TR/REC-html40">`,
 		`	<Styles>`,
 		`		<Style ss:ID="s1" ss:Name="Input">`,
-		`			<Interior ss:Color="#C6E0B4" ss:Pattern="Solid"/>`,
+		`			<Interior ss:Color="#D0DEC8" ss:Pattern="Solid"/>`,
 		`		</Style>`,
 		`		<Style ss:ID="s2" ss:Name="Output">`,
-		`			<Interior ss:Color="#BDD7EE" ss:Pattern="Solid"/>`,
+		`			<Interior ss:Color="#CCD9E4" ss:Pattern="Solid"/>`,
 		`		</Style>`,
-		`		<Style ss:ID="s3" ss:Name="Used">`,
+		`		<Style ss:ID="s3" ss:Name="Temp">`,
 		`			<Interior ss:Color="#DBDBDB" ss:Pattern="Solid"/>`,
+		`		</Style>`,
+		`		<Style ss:ID="s4" ss:Name="Main Input">`,
+		`			<Interior ss:Color="#C6E0B4" ss:Pattern="Solid"/>`,
+		`		</Style>`,
+		`		<Style ss:ID="s5" ss:Name="Main Output">`,
+		`			<Interior ss:Color="#BDD7EE" ss:Pattern="Solid"/>`,
 		`		</Style>`,
 		`	</Styles>`,
 		`	<Worksheet ss:Name="${sheetName}">`,
@@ -182,9 +218,22 @@ function generateSheet(sheetName: string, tableBody: string) {
 function generateRow(index: number, cells: string[]) {
 	return [`<Row ss:Index="${index.toString()}">`, ...cells.map(v => "\t" + v), "</Row>"].join("\n");
 }
-function generateCell(index: number, range: { w: number, h: number }, formula: string, label: string, kind: CellKind) {
+function generateFormulaCell(index: number, range: { w: number, h: number }, formula: string, label: string, kind: CellKind) {
 	const w = range.w, h = range.h;
-	const rangeRef = `RC:R${w === 1 ? "" : "[" + (w - 1) + "]"}C${h === 1 ? "" : "[" + (h - 1) + "]"}`;
-	const styleID: string = kind === "in" ? "s1" : kind === "out" ? "s2" : kind === "used" ? "s3" : neverHere(kind);
+	const rangeRef = `RC:R${h === 1 ? "" : "[" + (h - 1) + "]"}C${w === 1 ? "" : "[" + (w - 1) + "]"}`;
+	const styleID = kind2styleID(kind);
+
 	return `<Cell ss:Index="${index.toString()}" ss:ArrayRange="${rangeRef}" ss:Formula="${escapeXml(formula)}" ss:StyleID="${styleID}"><Comment><ss:Data xmlns="http://www.w3.org/TR/REC-html40">${escapeXml(label)}</ss:Data></Comment></Cell>`;
+}
+function generateBlankCell(index: number, kind: CellKind) {
+	const styleID = kind2styleID(kind);
+	return `<Cell ss:Index="${index.toString()}" ss:StyleID="${styleID}"></Cell>`;
+}
+function kind2styleID(kind: CellKind): string {
+	return kind === "in" ? "s1"
+		: kind === "out" ? "s2"
+			: kind === "tmp" ? "s3"
+				: kind === "in*" ? "s4"
+					: kind === "out*" ? "s5"
+						: neverHere(kind);
 }

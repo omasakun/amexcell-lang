@@ -152,9 +152,9 @@ function setExample(e: Elms, index: number) {
 			'	(in num4)',
 			'	; sumValue という出力を持つモジュールだと定義',
 			'	(out sumValue)',
-			'	; sumValue に、 num1 + num2 + num3 を代入',
+			'	; sumValue に、 num1 + num2 + num3 + num4 を代入',
 			'	; Excel関数と同じく、自動的に再計算される',
-			'	(= sumValue (+ num1 num2 num3)))',
+			'	(= sumValue (+ num1 num2 num3 num4)))',
 			'',
 			'; main という名前のモジュールが、最終的な入出力をする',
 			'(def main',
@@ -168,7 +168,7 @@ function setExample(e: Elms, index: number) {
 			'	(= adder.num1 (nums x:0))',
 			'	(= adder.num2 (nums x:1))',
 			'	(= adder.num3 (nums x:2))',
-			'	; Excel関数に、そのままの文字列で「A1」と出力される',
+			'	; Excel関数に、そのままの文字列で「Sheet1!A1」と出力される',
 			'	(= adder.num4 #"Sheet1!A1")',
 			'	(= (outs y:0) adder.sumValue)',
 			'	(= (outs y:1) (outs y:0)))',
@@ -194,8 +194,8 @@ function setExample(e: Elms, index: number) {
 			'	(var hori w:9)',
 			'	(var vert h:9)',
 			'	; 配列の一部への代入',
-			'	(= (hori x:0..4) [1 2 3 4 5])',
-			'	(= (hori x:5..8) [6 7 8 9])',
+			'	(= (hori x:0..4) [[1 2 3 4 5]])',
+			'	(= (hori x:5..8) [[6 7 8 9]])',
 			'	(= (vert y:0..4) (transpose (hori x:0..4)))',
 			'	(= (vert y:5..8) (transpose (hori x:5..8)))',
 			'	(= table (* hori vert)))',
@@ -218,7 +218,7 @@ function compiler(text: string, logger: Logger) {
 		logger.append("===== Result =====");
 		logger.append(result.result);
 		logger.append("===== EOF    =====");
-		if (isDebugMode()) return;
+		// if (isDebugMode()) return;
 		let fileName = prompt("Save as...", "workbook.xml");
 		if (fileName !== null) {
 			downloadText(fileName, result.result, "application/xml");
